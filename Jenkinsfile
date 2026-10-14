@@ -27,14 +27,23 @@ stage('Test image') {
         }
       }
     }
-    stage('Deploy Image') {
-      steps{
-        script {
-          docker.withRegistry( 'https://index.docker.io/v1/', registryCredential ) {
-            dockerImage.push()
+    stage('Publish Image') {
+          steps {
+            script {
+              docker.withRegistry('https://index.docker.io/v1/', registryCredential) {
+                dockerImage.push()
+              }
+            }
           }
         }
-      }
+        stage('Deploy Image') {
+          steps {
+            bat """
+              docker rm -f tp2-app 2>nul || exit /b 0
+              docker run -d --name tp2-app -p 8081:80 anassbouderhem/tp2:%BUILD_NUMBER%
+            """
+          }
+        }
     }
   }
 }
