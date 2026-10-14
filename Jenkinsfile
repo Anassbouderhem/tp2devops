@@ -13,37 +13,35 @@ pipeline {
       }
     }
     stage('Building image') {
-      steps{
+      steps {
         script {
           dockerImage = docker.build registry + ":$BUILD_NUMBER"
         }
       }
     }
-stage('Test image') {
-        steps{
+    stage('Test image') {
+      steps {
         script {
-
-            echo "Tests passed"
+          echo "Tests passed"
         }
       }
     }
     stage('Publish Image') {
-          steps {
-            script {
-              docker.withRegistry('https://index.docker.io/v1/', registryCredential) {
-                dockerImage.push()
-              }
-            }
+      steps {
+        script {
+          docker.withRegistry('https://index.docker.io/v1/', registryCredential) {
+            dockerImage.push()
           }
         }
-        stage('Deploy Image') {
-          steps {
-            bat """
-              docker rm -f tp2-app 2>nul || exit /b 0
-              docker run -d --name tp2-app -p 8081:80 anassbouderhem/tp2:%BUILD_NUMBER%
-            """
-          }
-        }
+      }
+    }
+    stage('Deploy Image') {
+      steps {
+        bat """
+          docker rm -f tp2-app 2>nul || exit /b 0
+          docker run -d --name tp2-app -p 8081:80 anassbouderhem/tp2:%BUILD_NUMBER%
+        """
+      }
     }
   }
 }
